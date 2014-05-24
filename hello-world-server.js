@@ -1,5 +1,6 @@
 var http = require('http');
 var fs = require('fs');
+var url = require('url');
 
 var server = http.createServer();
 server.on('request', doRequest);
@@ -7,18 +8,26 @@ server.listen(1337);
 
 function doRequest(req, res)
 {
-	fs.readFile('./index.html', 'UTF-8', doRead);
-	var title = "サンプルページ";
-	var msg = "これはプログラムで用意したメッセージです。";
-	
-	function doRead(err, data)
+	var path = url.parse(req.url);
+	switch(path.pathname)
 	{
-		var str = data
-			.replace(/@@@title@@@/g, title)
-			.replace(/@@@message@@@/, msg);
-		res.setHeader('Content-Type', 'text/html');
-		res.write(str);
-		res.end();
+		case '/':
+			fs.readFile('./index.html', 'UTF-8', doRead);
+			function doRead(err, data)
+			{
+				res.setHeader('Content-Type', 'text/html');
+				res.write(data);
+				res.end();
+			}
+			break;
+		case '/helo':
+			res.setHeader('Content-Type', 'text/plain');
+			res.end('HELO');
+			break;
+		default:
+			res.setHeader('Content-Type', 'text/html');
+			res.end('ERROR! - NO PAGE');
+			break;
 	}
 }
 
